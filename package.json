@@ -1,6 +1,6 @@
 {
   "name": "@isdk/match-ex",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Riceball LEE <snowyu.lee@gmail.com>",
   "description": "A declarative, weight-aware matching/validation engine: match actual values against an expectation tree using operators ($and, $or, $contains, $each, ...), JSON Schema, diffs and templates. Framework-agnostic -- usable in plain fixture-driven integration tests, response contract checks and the browser.",
   "keywords": [
