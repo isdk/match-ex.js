@@ -49,7 +49,7 @@
     "style": "pnpm run format:base -c && pnpm run lint",
     "style:fix": "pnpm run format:fix && npm run lint --fix",
     "test": "vitest run",
-    "release": "pnpm run clean && pnpm run build && pnpm dlx commit-and-tag-version -s",
+    "release": "pnpm run clean && pnpm run build && npx commit-and-tag-version -s",
     "release.alpha": "pnpm run release -- --prerelease alpha"
   },
   "dependencies": {
