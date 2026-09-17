@@ -1,5 +1,8 @@
 # @isdk/match-ex
 
+> 【English|[中文](./README.cn.md)】
+---
+
 A declarative, weight-aware matching/validation engine: match an *actual* value against an *expectation tree* using operators (`$and`, `$or`, `$contains`, `$each`, ...), JSON Schema, semantic diffs and templates.
 
 Framework-agnostic — usable in plain fixture-driven integration tests, response contract checks and the browser.
