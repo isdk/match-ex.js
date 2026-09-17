@@ -13,9 +13,7 @@ let _schemaCtor: JsonSchemaTypeCtor | undefined
 
 /**
  * Registers the concrete `JsonSchemaType` implementation to use
- * (e.g. the Ajv-backed `AjvSchemaType`).
- *
- * When not set, the Ajv-backed implementation is loaded lazily on first use.
+ * (e.g. the Ajv-backed `AjvSchemaType` from `@isdk/match-ex-schema`).
  */
 export function setJsonSchemaType(ctor: JsonSchemaTypeCtor): void {
   _schemaCtor = ctor
@@ -27,23 +25,25 @@ export function getJsonSchemaType(): JsonSchemaTypeCtor | undefined {
 }
 
 /**
- * Lazily resolves the concrete schema implementation.
+ * Returns the registered concrete schema implementation.
  *
- * The Ajv-backed implementation lives in its own module so that consumers which
- * never validate against a schema do not have to load (or install) Ajv.
+ * The engine ships none — the Ajv-backed one lives in the
+ * `@isdk/match-ex-schema` plugin package, which registers itself on import:
+ *
+ * ```ts
+ * import '@isdk/match-ex-schema'
+ * ```
+ *
+ * @throws If no implementation was registered before the first schema
+ * validation.
  */
-export async function resolveJsonSchemaType(): Promise<JsonSchemaTypeCtor> {
+export function resolveJsonSchemaType(): JsonSchemaTypeCtor {
   if (!_schemaCtor) {
-    try {
-      const mod = await import('./ajv-schema.js')
-      _schemaCtor = mod.AjvSchemaType as unknown as JsonSchemaTypeCtor
-    } catch (e) {
-      throw new Error(
-        'JSON Schema validation requires an Ajv-backed schema type. ' +
-          'Install "ajv", "ajv-formats" and "ajv-keywords", or register an ' +
-          'implementation via setJsonSchemaType().'
-      )
-    }
+    throw new Error(
+      'JSON Schema validation requires a registered schema type. ' +
+        'Register one via setJsonSchemaType(), e.g. by importing ' +
+        '"@isdk/match-ex-schema".'
+    )
   }
   return _schemaCtor
 }
@@ -103,8 +103,8 @@ export async function validateJsonSchema(
     schema = expected
   } else {
     // Resolving the implementation must stay outside the try/catch below:
-    // a missing Ajv install is a hard error, not an invalid schema.
-    const Ctor = await resolveJsonSchemaType()
+    // a missing registration is a hard error, not an invalid schema.
+    const Ctor = resolveJsonSchemaType()
     try {
       schema = Ctor.create(expected)
     } catch (e) {

@@ -5,9 +5,10 @@
  * schema node, so that `core.ts` can dispatch to the schema branch without
  * importing a concrete (and heavy) implementation such as Ajv.
  *
- * Concrete implementations (e.g. {@link AjvSchemaType}) live behind a separate
- * entry point and are resolved lazily, which keeps Ajv out of the bundle for
- * consumers that never validate against a schema.
+ * Concrete implementations (e.g. the Ajv-backed `AjvSchemaType` from the
+ * `@isdk/match-ex-schema` plugin package) register themselves via
+ * `setJsonSchemaType()`, which keeps Ajv out of the bundle for consumers that
+ * never validate against a schema.
  */
 export abstract class JsonSchemaType {
   /**

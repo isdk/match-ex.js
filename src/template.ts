@@ -44,33 +44,32 @@ export interface StringTemplateLike {
 let _stringTemplate: StringTemplateLike | undefined
 
 /**
- * Lazily loads `StringTemplate` from `@isdk/template-engines`.
+ * Returns the registered template implementation.
  *
- * `@isdk/ai-tool` re-exports exactly that class as `PromptTemplate`, but
- * importing it through `@isdk/ai-tool` drags the whole AI stack (30+ deps)
- * into the matching engine for the sake of one helper. Loading it on demand
- * keeps template interpolation off the hot path — and out of the bundle — for
- * consumers that never use it.
+ * The engine ships no template engine of its own. Register one via
+ * {@link setStringTemplate} — the `@isdk/match-ex-template` plugin does
+ * exactly that by importing `StringTemplate` from `@isdk/template-engines`:
+ *
+ * ```ts
+ * import '@isdk/match-ex-template'
+ * ```
+ *
+ * @throws If no implementation was registered before the first interpolation.
  */
-export async function getStringTemplate(): Promise<StringTemplateLike> {
+export function getStringTemplate(): StringTemplateLike {
   if (!_stringTemplate) {
-    const mod: any = await import('@isdk/template-engines')
-    const StringTemplate = mod.StringTemplate
-    if (!StringTemplate) {
-      throw new Error(
-        'Template interpolation requires "@isdk/template-engines". ' +
-          'Install it, or provide an implementation via setStringTemplate().'
-      )
-    }
-    _stringTemplate = StringTemplate as StringTemplateLike
+    throw new Error(
+      'Template interpolation requires a registered implementation. ' +
+        'Register one via setStringTemplate(), e.g. by importing ' +
+        '"@isdk/match-ex-template".'
+    )
   }
   return _stringTemplate
 }
 
 /**
- * Registers a custom template implementation, replacing the lazily loaded
- * `@isdk/template-engines` one. Useful to plug in a different dialect or to
- * avoid the dependency entirely.
+ * Registers a custom template implementation. Useful to plug in a different
+ * dialect or to avoid the dependency entirely.
  */
 export function setStringTemplate(impl: StringTemplateLike): void {
   _stringTemplate = impl
@@ -97,7 +96,7 @@ export async function formatTemplate(
     if (typeof value === 'string') {
       const data = { ...options.data, ...options.input }
       const formatOptions = omit(options, ['data', 'input'])
-      const StringTemplate = await getStringTemplate()
+      const StringTemplate = getStringTemplate()
       const content = await StringTemplate.formatIf({
         raw: true,
         template: value,

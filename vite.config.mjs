@@ -7,6 +7,7 @@ export default defineConfig({
   })],
   test: {
     include: ['src/**/*.spec.ts', 'src/**/*.test.ts', 'test/**/*.spec.ts', 'test/**/*.test.ts'],
+    setupFiles: ['./setupVitest.mjs'],
     testTimeout: 80000,
     globals: true,
   },
