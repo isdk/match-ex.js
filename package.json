@@ -53,22 +53,22 @@
     "release.alpha": "pnpm run release -- --prerelease alpha"
   },
   "dependencies": {
-    "diff": "^8.0.3",
-    "lodash-es": "^4.17.23",
-    "util-ex": "^2.5.2"
+    "diff": "^9.0.0",
+    "lodash-es": "^4.18.1",
+    "util-ex": "^2.7.1"
   },
   "devDependencies": {
     "@isdk/match-ex-schema": "workspace:^",
     "@isdk/template-engines": "workspace:^",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^25.1.0",
-    "prettier": "^3.8.1",
-    "terser": "^5.46.0",
+    "prettier": "^3.9.7",
+    "terser": "^5.51.2",
     "tsup": "^8.5.1",
-    "tsx": "^4.21.0",
+    "tsx": "^4.23.13",
     "typescript": "~5.7.3",
-    "vite": "^7.3.1",
-    "vite-tsconfig-paths": "^6.0.5",
-    "vitest": "^4.0.18"
+    "vite": "^8.3.0",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^5.0.1"
   }
 }
