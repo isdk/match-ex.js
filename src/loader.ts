@@ -54,6 +54,15 @@ export function resolveModuleUrl(specifier: string, baseDir?: string): string {
   return specifier
 }
 
+/**
+ * Simplified operator handler signature exposed to user-land custom operators.
+ *
+ * Receives `(actual, expected, fixture)` and returns a plain
+ * `ValidationResult` (sync or async). Use {@link wrapCustomOperator} to adapt
+ * it to the internal {@link ValidationOperatorHandler} signature — the
+ * fixture passed in additionally carries `$data`, `$options` (from an
+ * `expected.$value` wrapper) and `$validate` for recursive matching.
+ */
 export type CustomOperatorHandler = (
   actual: any,
   expected: any,

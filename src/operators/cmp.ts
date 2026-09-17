@@ -1,6 +1,9 @@
 import { ValidationContext, MatchResult } from '../types.js'
 import { processValidationResult } from '../utils.js'
 
+/**
+ * `$eq` — strict equality check (`===`).
+ */
 export async function validateEq(
   actual: any,
   expected: any,
@@ -15,6 +18,9 @@ export async function validateEq(
   )
 }
 
+/**
+ * `$ne` — strict inequality check (`!==`).
+ */
 export async function validateNe(
   actual: any,
   expected: any,
@@ -29,6 +35,9 @@ export async function validateNe(
   )
 }
 
+/**
+ * `$gt` — actual must be greater than expected (`>`).
+ */
 export async function validateGt(
   actual: any,
   expected: any,
@@ -43,6 +52,9 @@ export async function validateGt(
   )
 }
 
+/**
+ * `$gte` — actual must be greater than or equal to expected (`>=`).
+ */
 export async function validateGte(
   actual: any,
   expected: any,
@@ -57,6 +69,9 @@ export async function validateGte(
   )
 }
 
+/**
+ * `$lt` — actual must be less than expected (`<`).
+ */
 export async function validateLt(
   actual: any,
   expected: any,
@@ -71,6 +86,9 @@ export async function validateLt(
   )
 }
 
+/**
+ * `$lte` — actual must be less than or equal to expected (`<=`).
+ */
 export async function validateLte(
   actual: any,
   expected: any,
@@ -85,6 +103,9 @@ export async function validateLte(
   )
 }
 
+/**
+ * `$in` — actual must be one of the values in the expected array.
+ */
 export async function validateIn(
   actual: any,
   expected: any[],
@@ -107,6 +128,9 @@ export async function validateIn(
   )
 }
 
+/**
+ * `$nin` — actual must NOT be one of the values in the expected array.
+ */
 export async function validateNin(
   actual: any,
   expected: any[],

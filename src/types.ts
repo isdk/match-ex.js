@@ -154,10 +154,21 @@ export interface DiffOptions {
   intlSegmenter?: any
 }
 
+/**
+ * Loop metadata injected into `$each` iterations.
+ *
+ * Available inside `$expr` expressions and custom operators as the `loop`
+ * scope variable, enabling handlebars-style `{{@index}}` / `{{@first}}` /
+ * `{{@last}}` style logic.
+ */
 export interface ArrayLoopOptions {
+  /** Whether this is the first iteration. */
   first: boolean
+  /** Zero-based index of the current iteration. */
   index: number
+  /** Whether this is the last iteration. */
   last: boolean
+  /** Total number of items being iterated. */
   length: number
 }
 

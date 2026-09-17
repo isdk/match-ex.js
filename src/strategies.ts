@@ -159,6 +159,13 @@ export const maxStrategy: ScoringStrategy = {
   },
 }
 
+/**
+ * Registry of available scoring strategies, keyed by name.
+ *
+ * Built-in aliases:
+ * - `weighted` / `and` → {@link weightedSumStrategy}
+ * - `max` / `or` → {@link maxStrategy}
+ */
 export const strategies: Record<string, ScoringStrategy> = {
   weighted: weightedSumStrategy,
   max: maxStrategy,
@@ -166,6 +173,14 @@ export const strategies: Record<string, ScoringStrategy> = {
   or: maxStrategy,
 }
 
+/**
+ * Looks up a scoring strategy by name.
+ *
+ * Falls back to {@link weightedSumStrategy} when the name is missing or
+ * unknown.
+ *
+ * @param name Strategy name (a key of {@link strategies}).
+ */
 export function getStrategy(name?: string): ScoringStrategy {
   if (!name) return weightedSumStrategy
   return strategies[name] || strategies.weighted

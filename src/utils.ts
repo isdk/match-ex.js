@@ -65,6 +65,13 @@ function _getKeys(
  * Reserved metadata control keys.
  */
 export const META_CONTAINER = '$meta'
+/**
+ * Shorthand keys for node metadata (`$score`, `$critical`, `$title`,
+ * `$description`, `$dimension`, `$strategy`, `$threshold`).
+ *
+ * Only recognized as metadata when the item has no explicit `$meta` container —
+ * see {@link isMetadataKey}.
+ */
 export const META_SHORTHANDS = ['$score', '$critical', '$title', '$description', '$dimension', '$strategy', '$threshold']
 
 /**
@@ -467,6 +474,9 @@ export function calculateNormalizedWeights(
   })
 }
 
+/**
+ * Builds {@link ArrayLoopOptions} for the item at index `i` of `arr`.
+ */
 export function genArrayLoopOptions(arr: any[], i: number) {
   const result: ArrayLoopOptions = {
     first: i === 0,

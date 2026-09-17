@@ -2,6 +2,17 @@ import { newFunction } from 'util-ex'
 import { ValidationContext, MatchResult } from '../types.js'
 import { processValidationResult } from '../utils.js'
 
+/**
+ * `$expr` — evaluates a JS expression string against the actual value.
+ *
+ * The expression is compiled via `newFunction` with the scope
+ * `{ actual, expected, data, fixture, ctx, loop }` available as free
+ * variables. Its return value is interpreted as:
+ * - `boolean` → pass/fail, score 1/0
+ * - `number` → used directly as the score (truthiness decides pass)
+ * - `{ pass?, score? }` → merged into the result via `processValidationResult`
+ * - anything else → coerced to boolean
+ */
 export async function validateExpr(
   actual: any,
   expected: string,
