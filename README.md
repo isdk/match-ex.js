@@ -39,10 +39,13 @@ Framework-agnostic — usable in plain fixture-driven integration tests, respons
 @isdk/match-ex-template   plugin: {{placeholder}} interpolation (registers on import)
 ```
 
-The core ships **no template engine and no schema validator**. Both are pluggable:
+The core ships **no template engine and no schema validator**. Both are pluggable,
+and the engine degrades gracefully when a plugin is missing:
 
-- Without `@isdk/match-ex-template`, string interpolation of `{{...}}` expectations is unavailable (`getStringTemplate()` throws).
-- Without `@isdk/match-ex-schema`, JSON Schema expectations (heuristic detection or `$schema`) throw with a hint to install the plugin.
+- Without `@isdk/match-ex-template`, expectations are matched **literally**: `{{...}}` is not interpolated and no error is raised. Plain matching (strings, RegExp, operators, diff, …) keeps working. (`getStringTemplate()` still throws if you ask for the implementation explicitly.)
+- Without `@isdk/match-ex-schema`, a heuristically detected JSON Schema expectation falls back to plain object matching. Only an explicit `$schema` operator throws with a hint to install the plugin.
+
+The registry lives on `globalThis` under `Symbol.for('@isdk/match-ex/registry')`, so a plugin registers correctly even when duplicate copies of the core end up in the dependency tree.
 
 Importing a plugin registers itself immediately:
 

@@ -19,7 +19,7 @@ import {
   toRegExp,
 } from './utils.js'
 import { formatTemplate, formatObject } from './template.js'
-import { isJsonSchema, validateJsonSchema } from './schema.js'
+import { isJsonSchema, validateJsonSchema, getJsonSchemaType } from './schema.js'
 import { OPERATORS } from './operators.js'
 import { validateStringDiff } from './diff.js'
 import { JsonSchemaType } from './schema-type.js'
@@ -113,11 +113,18 @@ export async function validate(
     finalResult = await validateArray(actual, expected, ctx)
   } else if (vType === 'function') {
     finalResult = await validateFunction(actual, expected, ctx)
-  } else if (
-    JsonSchemaType.isInstance(expected) ||
-    (!ctx.disableHeuristicSchema && isJsonSchema(expected))
-  ) {
+  } else if (JsonSchemaType.isInstance(expected)) {
     finalResult = await validateSchema(actual, expected, ctx)
+  } else if (!ctx.disableHeuristicSchema && isJsonSchema(expected)) {
+    /**
+     * 【启发式 Schema 的降级】
+     * 只有显式 Schema（JsonSchemaType 实例、`$schema` 算子）在缺少实现时才算硬错误；
+     * 启发式命中的普通对象在缺少实现时回退为对象匹配，避免"看起来像 schema"的
+     * 期望值把整棵匹配树打崩。
+     */
+    finalResult = getJsonSchemaType()
+      ? await validateSchema(actual, expected, ctx)
+      : await validateObject(actual, expected, ctx)
   } else if (vType === 'object') {
     finalResult = await validateObject(actual, expected, ctx)
   } else {

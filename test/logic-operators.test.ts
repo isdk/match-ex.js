@@ -183,14 +183,15 @@ describe('validate/logic-operators', () => {
         user: {
           $and: [
             { id: { $schema: { type: 'number', minimum: 5 } } },
-            { sex: { $schema: { type: 'stirng', enum: ['male', 'female'] } } },
+            { sex: { $schema: { type: 'string', enum: ['male', 'female'] } } },
           ]
         }
       }
       const { failures } = await validate(actual, expected, new ValidationContext())
-      expect(failures).toHaveLength(1)
+      expect(failures).toHaveLength(2)
       // Path should accurately reflect the traversal: user -> $and[0] -> id
       expect(failures[0].key).toBe('user.$and[0].id')
+      expect(failures[1].key).toBe('user.$and[1].sex')
     })
 
     it('should handle triple-level nesting: $or -> $and -> $or', async () => {

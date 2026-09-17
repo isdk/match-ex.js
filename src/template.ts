@@ -1,4 +1,5 @@
 import { omit } from 'lodash-es'
+import { getRegistry } from './registry.js'
 
 /**
  * Options accepted by {@link formatTemplate} and {@link formatObject}.
@@ -30,6 +31,13 @@ export interface TemplateOptions {
    * template, enabling recursive rendering. Defaults to true.
    */
   expandValue?: boolean
+  /**
+   * Set to `false` to always run the template engine, even for values without
+   * any placeholder marker. Only needed for engines with a syntax outside of
+   * `{{ }}` / `{name}` / `$VAR` / `<%= %>`.
+   * Defaults to true.
+   */
+  skipPlainValue?: boolean
   /** Any other option is forwarded to the underlying template engine. */
   [name: string]: any
 }
@@ -41,7 +49,16 @@ export interface StringTemplateLike {
   formatIf(options: Record<string, any>): Promise<any> | any
 }
 
-let _stringTemplate: StringTemplateLike | undefined
+/**
+ * Returns the registered template implementation, or `undefined` if the host
+ * registered none.
+ *
+ * Internal: the engine degrades to literal matching in that case, so a missing
+ * plugin never breaks plain matching (see {@link formatTemplate}).
+ */
+export function peekStringTemplate(): StringTemplateLike | undefined {
+  return getRegistry().stringTemplate
+}
 
 /**
  * Returns the registered template implementation.
@@ -54,25 +71,47 @@ let _stringTemplate: StringTemplateLike | undefined
  * import '@isdk/match-ex-template'
  * ```
  *
- * @throws If no implementation was registered before the first interpolation.
+ * @throws If no implementation was registered. Callers that only want to
+ * interpolate "if possible" must use {@link peekStringTemplate} instead.
  */
 export function getStringTemplate(): StringTemplateLike {
-  if (!_stringTemplate) {
+  const impl = peekStringTemplate()
+  if (!impl) {
     throw new Error(
       'Template interpolation requires a registered implementation. ' +
         'Register one via setStringTemplate(), e.g. by importing ' +
         '"@isdk/match-ex-template".'
     )
   }
-  return _stringTemplate
+  return impl
 }
 
 /**
  * Registers a custom template implementation. Useful to plug in a different
  * dialect or to avoid the dependency entirely.
+ *
+ * Passing `undefined`/`null` unregisters the current implementation, which
+ * switches the engine back to literal (no interpolation) matching.
  */
-export function setStringTemplate(impl: StringTemplateLike): void {
-  _stringTemplate = impl
+export function setStringTemplate(
+  impl: StringTemplateLike | undefined | null
+): void {
+  getRegistry().stringTemplate = impl || undefined
+}
+
+/**
+ * Characters that can open a placeholder in any dialect the engine knows
+ * about: `{{ }}` (default / golang / hf), `{name}` (f-string), `$VAR` and
+ * `${VAR}` (env), `<%= %>` (ejs/erb). A value containing none of them cannot
+ * be interpolated by anything, so the template engine is skipped entirely.
+ */
+const PLACEHOLDER_MARKER_RE = /[{<$]/
+
+/**
+ * Whether `value` provably contains no template placeholder.
+ */
+export function isPlainValue(value: string): boolean {
+  return !PLACEHOLDER_MARKER_RE.test(value)
 }
 
 /**
@@ -89,23 +128,36 @@ export async function formatTemplate(
 ): Promise<any> {
   if (options.data) {
     let vRegEx: RegExp | undefined
+    let text: string | undefined
     if (value instanceof RegExp) {
       vRegEx = value
-      value = value.source
+      text = value.source
+    } else if (typeof value === 'string') {
+      text = value
     }
-    if (typeof value === 'string') {
-      const data = { ...options.data, ...options.input }
-      const formatOptions = omit(options, ['data', 'input'])
-      const StringTemplate = getStringTemplate()
-      const content = await StringTemplate.formatIf({
-        raw: true,
-        template: value,
-        ...formatOptions,
-        data,
-      })
-      if (content !== undefined) {
-        value = content
-      }
+    if (text === undefined) return value
+
+    /**
+     * 【未注册模板则降级为字面量】
+     * 核心不依赖任何模板引擎：没有注册实现时，期望值按字面量参与匹配，
+     * 而不是让整棵匹配树抛错。
+     */
+    const StringTemplate = peekStringTemplate()
+    if (!StringTemplate) return value
+
+    /** 没有任何占位符特征时同样不启用插值（纯文本快速路径）。 */
+    if (options.skipPlainValue !== false && isPlainValue(text)) return value
+
+    const data = { ...options.data, ...options.input }
+    const formatOptions = omit(options, ['data', 'input', 'skipPlainValue'])
+    const content = await StringTemplate.formatIf({
+      raw: true,
+      template: text,
+      ...formatOptions,
+      data,
+    })
+    if (content !== undefined) {
+      value = content
     }
     if (vRegEx) {
       if (vRegEx.source !== value) {

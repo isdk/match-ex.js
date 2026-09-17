@@ -39,10 +39,12 @@
 @isdk/match-ex-template   插件：{{占位符}} 插值（导入即注册）
 ```
 
-核心**不内置**模板引擎和 Schema 校验器，两者均可插拔：
+核心**不内置**模板引擎和 Schema 校验器，两者均可插拔；缺少插件时引擎会**优雅降级**，而不是抛错：
 
-- 未安装 `@isdk/match-ex-template` 时，`{{...}}` 期望的字符串插值不可用（`getStringTemplate()` 会抛错）。
-- 未安装 `@isdk/match-ex-schema` 时，JSON Schema 期望（启发式识别或 `$schema`）会抛错并提示安装插件。
+- 未安装 `@isdk/match-ex-template` 时，期望值按**字面量**参与匹配：`{{...}}` 不做插值、也不报错，字符串/正则/算子/diff 等普通匹配照常工作。（显式调用 `getStringTemplate()` 仍会抛错。）
+- 未安装 `@isdk/match-ex-schema` 时，启发式识别出的 JSON Schema 期望会回退为普通对象匹配；只有显式的 `$schema` 算子才抛错并提示安装插件。
+
+注册表挂在 `globalThis` 的 `Symbol.for('@isdk/match-ex/registry')` 上，因此即使依赖树里出现多份核心副本，插件注册也不会丢失。
 
 导入插件即自动完成注册：
 
@@ -174,7 +176,7 @@ await validate({ a: 1, b: 2 }, { a: 1 }, ctx) // pass === false（多余键 b）
 const ctx = new ValidationContext({ data: { user: { id: 1, name: 'Alice' } } })
 // "{{user}}" → { id: 1, name: 'Alice' }（对象本身，可直接做深度匹配）
 await validate({ id: 1, name: 'Alice' }, '{{user}}', ctx)
-// 正则模板：/Alice/ 
+// 正则模板：/Alice/
 await validate('Hi Alice', '/{{user.name}}/', ctx)
 ```
 
